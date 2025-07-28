@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   Text,
   View,
@@ -9,17 +9,14 @@ import {
   StatusBar,
   Animated,
   Pressable,
-  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
-import { Redirect, Stack, useRouter } from "expo-router";
-import { useAppStore } from "../../store";
+import { Stack, useRouter } from "expo-router";
 
 const { width: screenWidth } = Dimensions.get("window");
 
-// Datos del carrusel basados en las features de WelcomePage.tsx
 const carouselData = [
   {
     id: 1,
@@ -57,45 +54,9 @@ const carouselData = [
 
 const WelcomeScreen = () => {
   const navigate = useRouter();
-  const token = useAppStore((state) => state.token);
-  const [isStoreHydrated, setIsStoreHydrated] = useState(false);
-
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const unsubscribe = useAppStore.persist.onFinishHydration(() => {
-      setIsStoreHydrated(true);
-    });
-
-    if (useAppStore.persist.hasHydrated()) {
-      setIsStoreHydrated(true);
-    }
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  if (!isStoreHydrated) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#0f172a",
-        }}
-      >
-        <ActivityIndicator size="large" color="#f59e0b" />
-      </View>
-    );
-  }
-
-  if (token) {
-    return <Redirect href="/dashboard" />;
-  }
 
   const renderCarouselItem = ({
     item,
@@ -160,7 +121,6 @@ const WelcomeScreen = () => {
   };
 
   const handleLogin = () => {
-    console.log("Navegar a login");
     navigate.push("/login");
   };
 
@@ -176,24 +136,16 @@ const WelcomeScreen = () => {
           backgroundColor="transparent"
           translucent
         />
-
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.welcomeTitle}>
             Bienvenido a <Text style={styles.highlightText}>Kunto</Text>
           </Text>
         </View>
-
-        {/* Carrusel - 80% de la pantalla */}
         <View style={styles.carouselContainer}>
-          {/* <Text style={styles.welcomeTitle}>
-            Bienvenido a <Text style={styles.highlightText}>Kunto</Text>
-          </Text> */}
           <Text style={styles.welcomeSubtitle}>
             Descubre una forma revolucionaria de gestionar tus finanzas,
             organizar tus tareas y alcanzar tus metas.
           </Text>
-
           <Animated.FlatList
             ref={flatListRef}
             data={carouselData}
@@ -214,8 +166,6 @@ const WelcomeScreen = () => {
             )}
             scrollEventThrottle={16}
           />
-
-          {/* Indicadores de página */}
           <View style={styles.pagination}>
             {carouselData.map((_, index) => (
               <View
@@ -228,14 +178,8 @@ const WelcomeScreen = () => {
             ))}
           </View>
         </View>
-
-        {/* Botones - 20% de la pantalla */}
         <View style={styles.buttonContainer}>
-          <Pressable
-            style={styles.joinButton}
-            onPress={handleJoinWaitlist}
-            // activeOpacity={0.8}
-          >
+          <Pressable style={styles.joinButton} onPress={handleJoinWaitlist}>
             <LinearGradient
               colors={["#f59e0b", "#d97706"]}
               style={styles.gradientButton}
@@ -246,18 +190,6 @@ const WelcomeScreen = () => {
               </Text>
             </LinearGradient>
           </Pressable>
-
-          {/* <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin}
-            activeOpacity={0.8}
-          >
-            <BlurView intensity={20} style={styles.blurButton}>
-              <Ionicons name="log-in-outline" size={20} color="#f59e0b" />
-              <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
-            </BlurView>
-          </TouchableOpacity> */}
-
           <Text style={styles.footerText}>
             ¿Ya tienes una cuenta?{" "}
             <Text style={styles.linkText} onPress={handleLogin}>
