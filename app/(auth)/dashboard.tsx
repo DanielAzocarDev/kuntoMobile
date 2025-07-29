@@ -121,12 +121,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-        }}
-      />
+      {/* No necesitamos configurar la pantalla aquí ya que el drawer se maneja en el layout */}
       <LinearGradient
         colors={["#0f172a", "#1e293b", "#334155"]}
         style={styles.container}
@@ -172,7 +167,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    paddingTop: 60,
+    // paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
@@ -200,5 +195,9 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     padding: 8,
+  },
+  menuButton: {
+    padding: 8,
+    marginRight: 8,
   },
 });

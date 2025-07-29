@@ -1,7 +1,9 @@
 import { useAppStore } from "../../store";
-import { Redirect, Stack } from "expo-router";
+import { Redirect } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { Drawer } from "expo-router/drawer";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function AuthLayout() {
   const token = useAppStore((state) => state.token);
@@ -14,7 +16,6 @@ export default function AuthLayout() {
       setIsStoreHydrated(true);
     });
 
-    // Si la tienda ya se ha hidratado, podemos establecer el estado inmediatamente.
     if (useAppStore.persist.hasHydrated()) {
       setIsStoreHydrated(true);
     }
@@ -24,7 +25,6 @@ export default function AuthLayout() {
     };
   }, []);
 
-  // Mientras se espera que la tienda se hidrate, muestra un indicador de carga.
   if (!isStoreHydrated) {
     return (
       <View style={styles.loadingContainer}>
@@ -33,13 +33,65 @@ export default function AuthLayout() {
     );
   }
 
-  // Si la tienda está hidratada y no hay token, redirige a la página de inicio de sesión.
   if (!token) {
     return <Redirect href="/welcome" />;
   }
 
-  // Si hay un token, renderiza las rutas hijas.
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Drawer
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: "#0f172a",
+          },
+          headerTitleAlign: "center",
+          headerTintColor: "#fff",
+          headerShadowVisible: false,
+          drawerStyle: {
+            backgroundColor: "#0f172a",
+          },
+          drawerActiveBackgroundColor: "rgba(245, 158, 11, 0.1)",
+          drawerActiveTintColor: "#f59e0b",
+          drawerInactiveTintColor: "#9ca3af",
+          drawerLabelStyle: {
+            fontSize: 16,
+            fontWeight: "500",
+          },
+        }}
+      >
+        <Drawer.Screen
+          name="dashboard"
+          options={{
+            headerTitle: "",
+          }}
+        />
+        <Drawer.Screen
+          name="products"
+          options={{
+            headerTitle: "Productos",
+          }}
+        />
+        <Drawer.Screen
+          name="clients"
+          options={{
+            headerTitle: "Clientes",
+          }}
+        />
+        <Drawer.Screen
+          name="sales"
+          options={{
+            headerTitle: "Ventas",
+          }}
+        />
+        <Drawer.Screen
+          name="open-accounts"
+          options={{
+            headerTitle: "Cuentas Abiertas",
+          }}
+        />
+      </Drawer>
+    </GestureHandlerRootView>
+  );
 }
 
 const styles = StyleSheet.create({
