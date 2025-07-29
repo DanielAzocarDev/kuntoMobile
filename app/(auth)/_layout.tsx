@@ -63,30 +63,35 @@ export default function AuthLayout() {
           name="dashboard"
           options={{
             headerTitle: "",
+            drawerLabel: "Inicio",
           }}
         />
         <Drawer.Screen
           name="products"
           options={{
             headerTitle: "Productos",
+            drawerLabel: "Productos",
           }}
         />
         <Drawer.Screen
           name="clients"
           options={{
             headerTitle: "Clientes",
+            drawerLabel: "Clientes",
           }}
         />
         <Drawer.Screen
           name="sales"
           options={{
             headerTitle: "Ventas",
+            drawerLabel: "Ventas",
           }}
         />
         <Drawer.Screen
           name="open-accounts"
           options={{
             headerTitle: "Cuentas Abiertas",
+            drawerLabel: "Cuentas Abiertas",
           }}
         />
       </Drawer>
