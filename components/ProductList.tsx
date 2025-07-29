@@ -8,6 +8,7 @@ import {
   TextInput,
   ActivityIndicator,
   Image,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppStore } from "../store";
@@ -21,6 +22,8 @@ interface ProductListProps {
   onPageChange: (page: number) => void;
   onSearch: (query: string) => void;
   searchQuery: string;
+  onEditProduct?: (product: IProduct) => void;
+  onDeleteProduct?: (productId: string) => void;
 }
 
 const ProductList: React.FC<ProductListProps> = ({
@@ -31,11 +34,36 @@ const ProductList: React.FC<ProductListProps> = ({
   onPageChange,
   onSearch,
   searchQuery,
+  onEditProduct,
+  onDeleteProduct,
 }) => {
   const { addToCart } = useAppStore();
 
   const handleAddToCart = (product: IProduct) => {
     addToCart(product, 1);
+  };
+
+  const handleEditProduct = (product: IProduct) => {
+    if (onEditProduct) {
+      onEditProduct(product);
+    }
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    if (onDeleteProduct) {
+      Alert.alert(
+        "Eliminar Producto",
+        "¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.",
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Eliminar",
+            style: "destructive",
+            onPress: () => onDeleteProduct(productId),
+          },
+        ]
+      );
+    }
   };
 
   const renderProduct = ({ item }: { item: IProduct }) => (
@@ -48,17 +76,37 @@ const ProductList: React.FC<ProductListProps> = ({
         <Text style={styles.productStock}>Stock: {item.quantity}</Text>
       </View>
 
-      <TouchableOpacity
-        style={styles.addToCartButton}
-        onPress={() => handleAddToCart(item)}
-        disabled={item.quantity <= 0}
-      >
-        <Ionicons
-          name="add-circle-outline"
-          size={24}
-          color={item.quantity > 0 ? "#f59e0b" : "#6b7280"}
-        />
-      </TouchableOpacity>
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={styles.addToCartButton}
+          onPress={() => handleAddToCart(item)}
+          disabled={item.quantity <= 0}
+        >
+          <Ionicons
+            name="add-circle-outline"
+            size={24}
+            color={item.quantity > 0 ? "#f59e0b" : "#6b7280"}
+          />
+        </TouchableOpacity>
+
+        {onEditProduct && (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => handleEditProduct(item)}
+          >
+            <Ionicons name="create-outline" size={20} color="#3b82f6" />
+          </TouchableOpacity>
+        )}
+
+        {onDeleteProduct && (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteProduct(item.id)}
+          >
+            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 
@@ -80,14 +128,6 @@ const ProductList: React.FC<ProductListProps> = ({
             size={20}
             color={currentPage === 1 ? "#6b7280" : "#f59e0b"}
           />
-          {/* <Text
-            style={[
-              styles.paginationText,
-              currentPage === 1 && styles.paginationTextDisabled,
-            ]}
-          >
-            Anterior
-          </Text> */}
         </TouchableOpacity>
 
         <View style={styles.pageInfo}>
@@ -104,14 +144,6 @@ const ProductList: React.FC<ProductListProps> = ({
           onPress={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
         >
-          {/* <Text
-            style={[
-              styles.paginationText,
-              currentPage === totalPages && styles.paginationTextDisabled,
-            ]}
-          >
-            Siguiente
-          </Text> */}
           <Ionicons
             name="chevron-forward"
             size={20}
@@ -254,7 +286,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#9ca3af",
   },
+  actionButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   addToCartButton: {
+    padding: 8,
+  },
+  editButton: {
+    padding: 8,
+  },
+  deleteButton: {
     padding: 8,
   },
   loadingContainer: {

@@ -19,4 +19,24 @@ export const createClient = async (clientData: CreateClientPayload): Promise<{ s
     console.error('Error creating client:', error);
     throw error;
   }
+};
+
+export const updateClient = async (id: string, clientData: Partial<CreateClientPayload>): Promise<{ success: boolean; data: IClient }> => {
+  try {
+    const response = await apiClient.put(`/clients/${id}`, clientData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating client:', error);
+    throw error;
+  }
+};
+
+export const deleteClient = async (id: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.put(`/clients/delete/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting client:', error);
+    throw error;
+  }
 }; 

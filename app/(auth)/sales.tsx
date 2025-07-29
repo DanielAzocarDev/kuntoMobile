@@ -11,9 +11,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { getSales } from "../../api/sales";
 import { ISale } from "../../interfaces/sales.interfaces";
+import SaleDetailModal from "../../components/SaleDetailModal";
 
 const SalesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
 
   const {
     data: salesData,
@@ -28,6 +31,20 @@ const SalesPage: React.FC = () => {
     setCurrentPage(page);
   };
 
+  const handleViewSaleDetail = (saleId: string) => {
+    setSelectedSaleId(saleId);
+    setIsDetailModalVisible(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalVisible(false);
+    setSelectedSaleId(null);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return `$${amount.toLocaleString()}`;
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-ES", {
       day: "2-digit",
@@ -37,15 +54,24 @@ const SalesPage: React.FC = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "completed":
+    switch (status.toUpperCase()) {
+      case "PAID":
         return "#10b981";
-      case "pending":
+      case "PENDING":
         return "#f59e0b";
-      case "cancelled":
-        return "#ef4444";
       default:
         return "#9ca3af";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status.toUpperCase()) {
+      case "PAID":
+        return "Pagado";
+      case "PENDING":
+        return "Pendiente";
+      default:
+        return status;
     }
   };
 
@@ -53,12 +79,13 @@ const SalesPage: React.FC = () => {
     <View style={styles.saleCard}>
       <View style={styles.saleHeader}>
         <View style={styles.saleInfo}>
-          <Text style={styles.clientName}>
-            {item.client?.name || "Cliente"}
-          </Text>
+          <Text style={styles.saleId}>Venta #{item.id?.slice(-8)}</Text>
           <Text style={styles.saleDate}>
-            {item.createdAt ? formatDate(item.createdAt) : "Sin fecha"}
+            {formatDate(item.createdAt || item.saleDate || "")}
           </Text>
+          {item.client && (
+            <Text style={styles.clientName}>{item.client.name}</Text>
+          )}
         </View>
         <View style={styles.saleStatus}>
           <View
@@ -73,18 +100,34 @@ const SalesPage: React.FC = () => {
                 { color: getStatusColor(item.status) },
               ]}
             >
-              {item.status}
+              {getStatusText(item.status)}
             </Text>
           </View>
         </View>
       </View>
+
       <View style={styles.saleDetails}>
-        <Text style={styles.saleTotal}>
-          ${(item.total || 0).toLocaleString()}
-        </Text>
-        <Text style={styles.itemsCount}>
-          {item.items.length} producto{item.items.length !== 1 ? "s" : ""}
-        </Text>
+        <View style={styles.amountRow}>
+          <Text style={styles.amountLabel}>Total:</Text>
+          <Text style={styles.amountValue}>
+            {formatCurrency(item.total || 0)}
+          </Text>
+        </View>
+        <View style={styles.amountRow}>
+          <Text style={styles.amountLabel}>Productos:</Text>
+          <Text style={styles.amountValue}>
+            {item.items?.length || 0} items
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={styles.viewDetailButton}
+          onPress={() => handleViewSaleDetail(item.id!)}
+        >
+          <Ionicons name="eye-outline" size={20} color="#3b82f6" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -110,32 +153,36 @@ const SalesPage: React.FC = () => {
     );
   }
 
-  const totalSales = salesData?.data?.totalSale || 0;
-  const totalOrders = salesData?.data?.data?.length || 0;
+  const totalSales = salesData?.data?.totalItems || 0;
+  const totalPaid =
+    salesData?.data?.data?.filter((sale: ISale) => sale.status === "PAID")
+      .length || 0;
+  const totalPending =
+    salesData?.data?.data?.filter((sale: ISale) => sale.status === "PENDING")
+      .length || 0;
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Ionicons name="cart-outline" size={28} color="#f59e0b" />
+          <Ionicons name="receipt-outline" size={28} color="#f59e0b" />
           <Text style={styles.headerTitle}>Ventas</Text>
         </View>
-        {/* <TouchableOpacity style={styles.addButton}>
-          <Ionicons name="add" size={24} color="#ffffff" />
-        </TouchableOpacity> */}
       </View>
 
       <View style={styles.content}>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>
-              ${totalSales.toLocaleString()}
-            </Text>
+            <Text style={styles.statNumber}>{totalSales}</Text>
             <Text style={styles.statLabel}>Total Ventas</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{totalOrders}</Text>
-            <Text style={styles.statLabel}>Pedidos</Text>
+            <Text style={styles.statNumber}>{totalPaid}</Text>
+            <Text style={styles.statLabel}>Pagadas</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{totalPending}</Text>
+            <Text style={styles.statLabel}>Pendientes</Text>
           </View>
         </View>
 
@@ -148,7 +195,7 @@ const SalesPage: React.FC = () => {
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Ionicons name="cart-outline" size={48} color="#9ca3af" />
+                <Ionicons name="receipt-outline" size={48} color="#9ca3af" />
                 <Text style={styles.emptyText}>No hay ventas disponibles</Text>
               </View>
             }
@@ -199,6 +246,12 @@ const SalesPage: React.FC = () => {
           </View>
         )}
       </View>
+
+      <SaleDetailModal
+        isVisible={isDetailModalVisible}
+        onClose={handleCloseDetailModal}
+        saleId={selectedSaleId}
+      />
     </View>
   );
 };
@@ -256,14 +309,6 @@ const styles = StyleSheet.create({
     color: "#e5e7eb",
     marginLeft: 12,
   },
-  addButton: {
-    backgroundColor: "#f59e0b",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   content: {
     flex: 1,
     paddingHorizontal: 20,
@@ -277,20 +322,21 @@ const styles = StyleSheet.create({
   statCard: {
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     flex: 1,
-    marginHorizontal: 4,
+    marginHorizontal: 2,
     alignItems: "center",
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#f59e0b",
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#9ca3af",
     marginTop: 4,
+    textAlign: "center",
   },
   listContainer: {
     flex: 1,
@@ -317,7 +363,7 @@ const styles = StyleSheet.create({
   saleInfo: {
     flex: 1,
   },
-  clientName: {
+  saleId: {
     fontSize: 16,
     fontWeight: "600",
     color: "#e5e7eb",
@@ -326,6 +372,11 @@ const styles = StyleSheet.create({
   saleDate: {
     fontSize: 12,
     color: "#9ca3af",
+    marginBottom: 2,
+  },
+  clientName: {
+    fontSize: 12,
+    color: "#f59e0b",
   },
   saleStatus: {
     marginLeft: 12,
@@ -341,18 +392,35 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   saleDetails: {
+    borderTopWidth: 1,
+    borderTopColor: "rgba(156, 163, 175, 0.2)",
+    paddingTop: 12,
+    marginBottom: 12,
+  },
+  amountRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 4,
   },
-  saleTotal: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#10b981",
-  },
-  itemsCount: {
-    fontSize: 12,
+  amountLabel: {
+    fontSize: 14,
     color: "#9ca3af",
+  },
+  amountValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#e5e7eb",
+  },
+  actionButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(156, 163, 175, 0.2)",
+    paddingTop: 12,
+  },
+  viewDetailButton: {
+    padding: 8,
   },
   emptyContainer: {
     alignItems: "center",

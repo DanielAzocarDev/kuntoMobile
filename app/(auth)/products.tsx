@@ -7,13 +7,21 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { getProducts } from "../../api/products";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getProducts, deleteProduct } from "../../api/products";
 import ProductList from "../../components/ProductList";
+import AddProductModal from "../../components/AddProductModal";
+import EditProductModal from "../../components/EditProductModal";
+import { IProduct } from "../../interfaces/product.interfaces";
 
 const ProductsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
+
+  const queryClient = useQueryClient();
 
   const {
     data: productsData,
@@ -24,6 +32,16 @@ const ProductsPage: React.FC = () => {
     queryFn: () => getProducts(currentPage, 20),
   });
 
+  const deleteProductMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error: Error) => {
+      console.error("Error deleting product:", error);
+    },
+  });
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -31,6 +49,28 @@ const ProductsPage: React.FC = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
+  };
+
+  const handleAddProduct = () => {
+    setIsAddModalVisible(true);
+  };
+
+  const handleCloseAddModal = () => {
+    setIsAddModalVisible(false);
+  };
+
+  const handleEditProduct = (product: IProduct) => {
+    setSelectedProduct(product);
+    setIsEditModalVisible(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalVisible(false);
+    setSelectedProduct(null);
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    deleteProductMutation.mutate(productId);
   };
 
   if (isLoading && !productsData) {
@@ -63,7 +103,7 @@ const ProductsPage: React.FC = () => {
             <Text style={styles.headerTitle}>Productos</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddProduct}>
           <Ionicons name="add" size={24} color="#ffffff" />
         </TouchableOpacity>
       </View>
@@ -93,8 +133,21 @@ const ProductsPage: React.FC = () => {
           onPageChange={handlePageChange}
           onSearch={handleSearch}
           searchQuery={searchQuery}
+          onEditProduct={handleEditProduct}
+          onDeleteProduct={handleDeleteProduct}
         />
       </View>
+
+      <AddProductModal
+        isVisible={isAddModalVisible}
+        onClose={handleCloseAddModal}
+      />
+
+      <EditProductModal
+        isVisible={isEditModalVisible}
+        onClose={handleCloseEditModal}
+        product={selectedProduct}
+      />
     </View>
   );
 };
