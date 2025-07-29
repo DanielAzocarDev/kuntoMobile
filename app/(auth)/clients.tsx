@@ -6,14 +6,22 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { getClients } from "../../api/clients";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getClients, deleteClient } from "../../api/clients";
 import { IClient } from "../../interfaces/client.interfaces";
+import AddClientModal from "../../components/AddClientModal";
+import EditClientModal from "../../components/EditClientModal";
 
 const ClientsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<IClient | null>(null);
+
+  const queryClient = useQueryClient();
 
   const {
     data: clientsData,
@@ -24,8 +32,51 @@ const ClientsPage: React.FC = () => {
     queryFn: () => getClients(currentPage, 20),
   });
 
+  const deleteClientMutation = useMutation({
+    mutationFn: deleteClient,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+    },
+    onError: (error: Error) => {
+      console.error("Error deleting client:", error);
+    },
+  });
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleAddClient = () => {
+    setIsAddModalVisible(true);
+  };
+
+  const handleCloseAddModal = () => {
+    setIsAddModalVisible(false);
+  };
+
+  const handleEditClient = (client: IClient) => {
+    setSelectedClient(client);
+    setIsEditModalVisible(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalVisible(false);
+    setSelectedClient(null);
+  };
+
+  const handleDeleteClient = (clientId: string) => {
+    Alert.alert(
+      "Eliminar Cliente",
+      "¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => deleteClientMutation.mutate(clientId),
+        },
+      ]
+    );
   };
 
   const renderClient = ({ item }: { item: IClient }) => (
@@ -35,9 +86,20 @@ const ClientsPage: React.FC = () => {
         <Text style={styles.clientEmail}>{item.email}</Text>
         <Text style={styles.clientPhone}>{item.phone}</Text>
       </View>
-      <TouchableOpacity style={styles.actionButton}>
-        <Ionicons name="ellipsis-vertical" size={20} color="#9ca3af" />
-      </TouchableOpacity>
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => handleEditClient(item)}
+        >
+          <Ionicons name="create-outline" size={20} color="#3b82f6" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDeleteClient(item.id)}
+        >
+          <Ionicons name="trash-outline" size={20} color="#ef4444" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -69,7 +131,7 @@ const ClientsPage: React.FC = () => {
           <Ionicons name="people-outline" size={28} color="#f59e0b" />
           <Text style={styles.headerTitle}>Clientes</Text>
         </View>
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddClient}>
           <Ionicons name="add" size={24} color="#ffffff" />
         </TouchableOpacity>
       </View>
@@ -152,6 +214,17 @@ const ClientsPage: React.FC = () => {
           </View>
         )}
       </View>
+
+      <AddClientModal
+        isVisible={isAddModalVisible}
+        onClose={handleCloseAddModal}
+      />
+
+      <EditClientModal
+        isVisible={isEditModalVisible}
+        onClose={handleCloseEditModal}
+        client={selectedClient}
+      />
     </View>
   );
 };
@@ -280,7 +353,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#9ca3af",
   },
-  actionButton: {
+  actionButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  editButton: {
+    padding: 8,
+  },
+  deleteButton: {
     padding: 8,
   },
   emptyContainer: {

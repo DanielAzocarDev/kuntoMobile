@@ -29,4 +29,14 @@ export const getSales = async (page = 1, pageSize = 10, search?: string) => {
     console.error('Error fetching sales:', error);
     throw new Error('Error fetching sales');
   }
+};
+
+export const getSaleById = async (id: string) => {
+  try {
+    const { data } = await apiClient.get(`/sales/${id}/payments`);
+    return data;
+  } catch (error) {
+    console.error("Error fetching sale by ID:", error);
+    throw new Error("Failed to fetch sale by ID");
+  }
 }; 
