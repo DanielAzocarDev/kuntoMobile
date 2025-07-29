@@ -120,9 +120,9 @@ const SalesPage: React.FC = () => {
           <Ionicons name="cart-outline" size={28} color="#f59e0b" />
           <Text style={styles.headerTitle}>Ventas</Text>
         </View>
-        <TouchableOpacity style={styles.addButton}>
+        {/* <TouchableOpacity style={styles.addButton}>
           <Ionicons name="add" size={24} color="#ffffff" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <View style={styles.content}>
@@ -243,8 +243,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingVertical: 20,
     backgroundColor: "#1e293b",
   },
   headerContent: {

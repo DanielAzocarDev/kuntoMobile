@@ -58,9 +58,6 @@ const ProductsPage: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <TouchableOpacity style={styles.menuButton}>
-            <Ionicons name="menu-outline" size={24} color="#f59e0b" />
-          </TouchableOpacity>
           <View style={styles.titleContainer}>
             <Ionicons name="cube-outline" size={28} color="#f59e0b" />
             <Text style={styles.headerTitle}>Productos</Text>
@@ -142,8 +139,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingVertical: 20,
     backgroundColor: "#1e293b",
   },
   headerContent: {
