@@ -1,3 +1,4 @@
+import { useAppStore } from '@/store';
 import axios from 'axios';
 
 // Configuración base de axios para mobile
@@ -11,8 +12,10 @@ export const apiClient = axios.create({
 // Interceptor para agregar el token a las peticiones
 apiClient.interceptors.request.use(
   (config) => {
-    // Aquí puedes agregar lógica para obtener el token del store
-    // Por ahora lo dejamos simple
+    const token = useAppStore.getState().token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {

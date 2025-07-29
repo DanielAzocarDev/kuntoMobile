@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
 import { AuthState, createAuthSlice } from "./slices/auth.slice";
+import { ICartState, createCartSlice } from "./slices/cart.slice";
+
+// Combinar los tipos de los slices
+export type AppState = AuthState & ICartState;
 
 // Adaptador personalizado para expo-secure-store
 const secureStorage = {
@@ -29,10 +33,11 @@ const secureStorage = {
   },
 };
 
-export const useAppStore = create<AuthState>()(
+export const useAppStore = create<AppState>()(
   persist(
     (set, get, api) => ({
       ...createAuthSlice(set, get, api),
+      ...createCartSlice(set, get, api),
     }),
     {
       name: 'app-store',
