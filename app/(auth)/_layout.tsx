@@ -1,15 +1,18 @@
 import { useAppStore } from "../../store";
 import { Redirect } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { ActivityIndicator, View, StyleSheet, Alert } from "react-native";
 import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useGlobalTokenValidation } from "../../hooks/useGlobalTokenValidation";
 
 export default function AuthLayout() {
   const token = useAppStore((state) => state.token);
+  const logout = useAppStore((state) => state.logout);
   const [isStoreHydrated, setIsStoreHydrated] = useState(
     useAppStore.persist.hasHydrated()
   );
+  const { isValidating } = useGlobalTokenValidation();
 
   useEffect(() => {
     const unsubscribe = useAppStore.persist.onFinishHydration(() => {
@@ -25,7 +28,27 @@ export default function AuthLayout() {
     };
   }, []);
 
-  if (!isStoreHydrated) {
+  const handleLogout = () => {
+    Alert.alert(
+      "Cerrar Sesión",
+      "¿Estás seguro de que quieres cerrar sesión?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Cerrar Sesión",
+          style: "destructive",
+          onPress: () => {
+            logout();
+          },
+        },
+      ]
+    );
+  };
+
+  if (!isStoreHydrated || isValidating) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#f59e0b" />
@@ -92,6 +115,31 @@ export default function AuthLayout() {
           options={{
             headerTitle: "Cuentas Abiertas",
             drawerLabel: "Cuentas Abiertas",
+          }}
+        />
+        <Drawer.Screen
+          name="profile"
+          options={{
+            headerTitle: "Mi Perfil",
+            drawerLabel: "Mi Perfil",
+          }}
+        />
+        <Drawer.Screen
+          name="logout"
+          options={{
+            headerShown: false,
+            drawerLabel: "Cerrar Sesión",
+            drawerItemStyle: {
+              marginTop: 20,
+              borderTopWidth: 1,
+              borderTopColor: "#334155",
+              paddingTop: 20,
+            },
+          }}
+          listeners={{
+            focus: () => {
+              handleLogout();
+            },
           }}
         />
       </Drawer>
