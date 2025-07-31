@@ -10,7 +10,7 @@ import { useAppStore } from "../../store";
 import { Ionicons } from "@expo/vector-icons";
 import EditProfileForm from "../../components/EditProfileForm";
 import ChangePasswordModal from "../../components/ChangePasswordModal";
-import TokenDebugInfo from "../../components/common/TokenDebugInfo";
+// import TokenDebugInfo from "../../components/common/TokenDebugInfo";
 
 export default function ProfilePage() {
   const user = useAppStore((state) => state.user);
@@ -24,7 +24,7 @@ export default function ProfilePage() {
 
       <View style={styles.content}>
         {/* Información de Debug */}
-        <TokenDebugInfo />
+        {/* <TokenDebugInfo /> */}
 
         {/* Información del Usuario */}
         <View style={styles.infoCard}>
