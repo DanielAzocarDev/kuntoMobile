@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
+    "dev": "APP_VARIANT=development npx expo start",
+    "preview": "APP_VARIANT=preview npx expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -19,6 +21,7 @@
     "@react-navigation/native": "^7.1.6",
     "@tanstack/react-query": "^5.83.0",
     "axios": "^1.10.0",
+    "date-fns": "^4.1.0",
     "expo": "~53.0.20",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
@@ -43,7 +46,8 @@
     "react-native-screens": "~4.11.1",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.6",
+    "expo-dev-client": "~5.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

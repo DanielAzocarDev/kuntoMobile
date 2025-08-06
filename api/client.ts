@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Configuración base de axios para mobile
 export const apiClient = axios.create({
-  baseURL: 'https://kashin-api-dev.up.railway.app', // Ajusta según tu configuración
+  baseURL: process.env.EXPO_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
