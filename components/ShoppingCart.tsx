@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "rgba(156, 163, 175, 0.2)",
   },
   itemInfo: {
-    flex: 2,
+    flex: 1,
     marginRight: 12,
     justifyContent: "center",
   },
@@ -613,7 +613,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#ffffff",
     marginBottom: 6,
-    flex: 1,
   },
   itemPrice: {
     fontSize: 12,

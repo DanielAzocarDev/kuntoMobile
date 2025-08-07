@@ -12,6 +12,7 @@ import { getProducts, deleteProduct } from "../../api/products";
 import ProductList from "../../components/ProductList";
 import AddProductModal from "../../components/AddProductModal";
 import EditProductModal from "../../components/EditProductModal";
+import ProductDetailModal from "../../components/ProductDetailModal";
 import { IProduct } from "../../interfaces/product.interfaces";
 
 const ProductsPage: React.FC = () => {
@@ -19,6 +20,7 @@ const ProductsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
 
   const queryClient = useQueryClient();
@@ -66,6 +68,16 @@ const ProductsPage: React.FC = () => {
 
   const handleCloseEditModal = () => {
     setIsEditModalVisible(false);
+    setSelectedProduct(null);
+  };
+
+  const handleViewProductDetail = (product: IProduct) => {
+    setSelectedProduct(product);
+    setIsDetailModalVisible(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalVisible(false);
     setSelectedProduct(null);
   };
 
@@ -118,7 +130,7 @@ const ProductsPage: React.FC = () => {
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>
-              {productsData?.data?.data?.filter((p: any) => p.stock > 0)
+              {productsData?.data?.data?.filter((p: any) => p.quantity > 0)
                 .length || 0}
             </Text>
             <Text style={styles.statLabel}>En Stock</Text>
@@ -146,6 +158,12 @@ const ProductsPage: React.FC = () => {
       <EditProductModal
         isVisible={isEditModalVisible}
         onClose={handleCloseEditModal}
+        product={selectedProduct}
+      />
+
+      <ProductDetailModal
+        isVisible={isDetailModalVisible}
+        onClose={handleCloseDetailModal}
         product={selectedProduct}
       />
     </View>

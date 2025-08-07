@@ -14,10 +14,22 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addProduct } from "../api/products";
 import type { CreateProductPayload } from "../interfaces/product.interfaces";
+import axios from "axios";
 
 interface AddProductModalProps {
   isVisible: boolean;
   onClose: () => void;
+}
+
+interface IError {
+  field: string;
+  message: string;
+}
+
+interface IErrorResponse {
+  success: boolean;
+  message: string;
+  errors?: IError[];
 }
 
 const AddProductModal: React.FC<AddProductModalProps> = ({
@@ -39,8 +51,22 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
       resetForm();
       onClose();
     },
-    onError: (error: Error) => {
-      setError(error.message);
+    onError: (err: unknown) => {
+      if (axios.isAxiosError(err) && err.response) {
+        const apiError = err.response.data as IErrorResponse;
+        if (apiError.errors && apiError.errors.length > 0) {
+          const errorMessages = apiError.errors
+            .map((e: IError) => e.message)
+            .join("\n");
+          setError(errorMessages);
+        } else {
+          setError(apiError.message || "Ocurrió un error en el servidor.");
+        }
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Ocurrió un error inesperado.");
+      }
     },
   });
 

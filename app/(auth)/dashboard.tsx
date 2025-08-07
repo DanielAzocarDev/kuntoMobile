@@ -15,8 +15,10 @@ import { useAppStore } from "../../store";
 import StatsModule from "@/components/StatsModule";
 import ShoppingCart from "@/components/ShoppingCart";
 import ProductList from "@/components/ProductList";
+import ProductDetailModal from "@/components/ProductDetailModal";
 import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "../../api/products";
+import { IProduct } from "../../interfaces/product.interfaces";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -27,6 +29,8 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
 
   // Debounce para la búsqueda
   useEffect(() => {
@@ -59,6 +63,16 @@ export default function Dashboard() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+  };
+
+  const handleViewProductDetail = (product: IProduct) => {
+    setSelectedProduct(product);
+    setIsDetailModalVisible(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalVisible(false);
+    setSelectedProduct(null);
   };
 
   // Datos para el FlatList principal
@@ -146,6 +160,12 @@ export default function Dashboard() {
             initialNumToRender={4}
           />
         </SafeAreaView>
+
+        <ProductDetailModal
+          isVisible={isDetailModalVisible}
+          onClose={handleCloseDetailModal}
+          product={selectedProduct}
+        />
       </LinearGradient>
     </>
   );
