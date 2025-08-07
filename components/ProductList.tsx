@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAppStore } from "../store";
 import { IProduct } from "../interfaces/product.interfaces";
+import ProductDetailModal from "./ProductDetailModal";
 
 interface ProductListProps {
   products: IProduct[];
@@ -38,6 +39,8 @@ const ProductList: React.FC<ProductListProps> = ({
   onDeleteProduct,
 }) => {
   const { addToCart } = useAppStore();
+  const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
 
   const handleAddToCart = (product: IProduct) => {
     addToCart(product, 1);
@@ -66,8 +69,21 @@ const ProductList: React.FC<ProductListProps> = ({
     }
   };
 
+  const handleViewProductDetail = (product: IProduct) => {
+    setSelectedProduct(product);
+    setIsDetailModalVisible(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalVisible(false);
+    setSelectedProduct(null);
+  };
+
   const renderProduct = ({ item }: { item: IProduct }) => (
-    <View style={styles.productCard}>
+    <TouchableOpacity
+      style={styles.productCard}
+      onPress={() => handleViewProductDetail(item)}
+    >
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>
           {item.name}
@@ -79,7 +95,10 @@ const ProductList: React.FC<ProductListProps> = ({
       <View style={styles.actionButtons}>
         <TouchableOpacity
           style={styles.addToCartButton}
-          onPress={() => handleAddToCart(item)}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleAddToCart(item);
+          }}
           disabled={item.quantity <= 0}
         >
           <Ionicons
@@ -92,7 +111,10 @@ const ProductList: React.FC<ProductListProps> = ({
         {onEditProduct && (
           <TouchableOpacity
             style={styles.editButton}
-            onPress={() => handleEditProduct(item)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleEditProduct(item);
+            }}
           >
             <Ionicons name="create-outline" size={20} color="#3b82f6" />
           </TouchableOpacity>
@@ -101,13 +123,26 @@ const ProductList: React.FC<ProductListProps> = ({
         {onDeleteProduct && (
           <TouchableOpacity
             style={styles.deleteButton}
-            onPress={() => handleDeleteProduct(item.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleDeleteProduct(item.id);
+            }}
           >
             <Ionicons name="trash-outline" size={20} color="#ef4444" />
           </TouchableOpacity>
         )}
+
+        <TouchableOpacity
+          style={styles.detailButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleViewProductDetail(item);
+          }}
+        >
+          <Ionicons name="eye-outline" size={20} color="#10b981" />
+        </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderPagination = () => {
@@ -203,6 +238,12 @@ const ProductList: React.FC<ProductListProps> = ({
       </View>
 
       {renderPagination()}
+
+      <ProductDetailModal
+        isVisible={isDetailModalVisible}
+        onClose={handleCloseDetailModal}
+        product={selectedProduct}
+      />
     </View>
   );
 };
@@ -298,6 +339,9 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   deleteButton: {
+    padding: 8,
+  },
+  detailButton: {
     padding: 8,
   },
   loadingContainer: {
