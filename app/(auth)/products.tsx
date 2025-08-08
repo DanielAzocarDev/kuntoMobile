@@ -31,7 +31,9 @@ const ProductsPage: React.FC = () => {
     error,
   } = useQuery({
     queryKey: ["products", currentPage, searchQuery],
-    queryFn: () => getProducts(currentPage, 20),
+    queryFn: () => getProducts(currentPage, 10, searchQuery),
+    gcTime: 0,
+    staleTime: 0,
   });
 
   const deleteProductMutation = useMutation({
@@ -85,14 +87,14 @@ const ProductsPage: React.FC = () => {
     deleteProductMutation.mutate(productId);
   };
 
-  if (isLoading && !productsData) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#f59e0b" />
-        <Text style={styles.loadingText}>Cargando productos...</Text>
-      </View>
-    );
-  }
+  // if (isLoading && !productsData) {
+  //   return (
+  //     <View style={styles.loadingContainer}>
+  //       <ActivityIndicator size="large" color="#f59e0b" />
+  //       <Text style={styles.loadingText}>Cargando productos...</Text>
+  //     </View>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -138,10 +140,10 @@ const ProductsPage: React.FC = () => {
         </View>
 
         <ProductList
-          products={productsData?.data?.data || []}
+          products={productsData ? productsData.data.data : []}
           isLoading={isLoading}
           currentPage={currentPage}
-          totalPages={productsData?.data?.totalPages || 1}
+          totalPages={productsData ? productsData.data.totalPages : 1}
           onPageChange={handlePageChange}
           onSearch={handleSearch}
           searchQuery={searchQuery}

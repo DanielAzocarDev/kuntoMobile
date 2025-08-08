@@ -79,7 +79,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "rgb(30, 41, 59)",
     borderRadius: 12,
     padding: 4,
   },
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   optionSelected: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,

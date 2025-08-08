@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: "rgb(30, 41, 59)",
     borderRadius: 12,
     padding: 12,
     shadowColor: "#000",
@@ -100,7 +100,8 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   skeleton: {
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "rgb(30, 41, 59)",
+    height: 100,
   },
   errorCard: {
     borderWidth: 1,
@@ -123,12 +124,12 @@ const styles = StyleSheet.create({
   cardValue: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#1f2937",
+    color: "#e5e7eb",
     marginBottom: 2,
   },
   cardSubtitle: {
     fontSize: 11,
-    color: "#9ca3af",
+    color: "#e5e7eb",
   },
   errorTitle: {
     fontSize: 12,

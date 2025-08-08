@@ -52,6 +52,8 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: ["products", currentPage, debouncedSearchQuery],
     queryFn: () => getProducts(currentPage, 10, debouncedSearchQuery),
+    gcTime: 0,
+    staleTime: 0,
   });
 
   const handleLogout = () => {
@@ -67,11 +69,6 @@ export default function Dashboard() {
     setSearchQuery(query);
   };
 
-  const handleViewProductDetail = (product: IProduct) => {
-    setSelectedProduct(product);
-    setIsDetailModalVisible(true);
-  };
-
   const handleCloseDetailModal = () => {
     setIsDetailModalVisible(false);
     setSelectedProduct(null);
@@ -80,7 +77,7 @@ export default function Dashboard() {
   // Datos para el FlatList principal
   const dashboardSections = [
     // { id: "header", type: "header" },
-    // { id: "stats", type: "stats" },
+    { id: "stats", type: "stats" },
     { id: "cart", type: "cart" },
     { id: "products", type: "products" },
   ];
@@ -111,8 +108,17 @@ export default function Dashboard() {
       //     </View>
       //   );
 
-      // case "stats":
-      //   return <StatsModule />;
+      case "stats":
+        return (
+          <View>
+            <View style={{ paddingBottom: 10 }}>
+              <MobileRevenueKpis />
+            </View>
+            <View style={{ paddingBottom: 10 }}>
+              <MobileSalesChart />
+            </View>
+          </View>
+        );
 
       case "cart":
         return <ShoppingCart />;
@@ -120,10 +126,10 @@ export default function Dashboard() {
       case "products":
         return (
           <ProductList
-            products={productsData?.data?.data || []}
+            products={productsData ? productsData.data.data : []}
             isLoading={productsLoading}
             currentPage={currentPage}
-            totalPages={productsData?.data?.totalPages || 1}
+            totalPages={productsData ? productsData.data.totalPages : 1}
             onPageChange={handlePageChange}
             onSearch={handleSearch}
             searchQuery={searchQuery}
@@ -165,12 +171,6 @@ export default function Dashboard() {
                 <Ionicons name="log-out-outline" size={24} color="#f59e0b" />
               </TouchableOpacity>
             </View>
-          </View>
-          <View style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
-            <MobileRevenueKpis />
-          </View>
-          <View style={{ paddingBottom: 10 }}>
-            <MobileSalesChart />
           </View>
 
           <FlatList
