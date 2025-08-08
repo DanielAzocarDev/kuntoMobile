@@ -189,14 +189,14 @@ const ProductList: React.FC<ProductListProps> = ({
     );
   };
 
-  if (isLoading && products.length === 0) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#f59e0b" />
-        <Text style={styles.loadingText}>Cargando productos...</Text>
-      </View>
-    );
-  }
+  // if (isLoading && products.length === 0) {
+  //   return (
+  //     <View style={styles.loadingContainer}>
+  //       <ActivityIndicator size="large" color="#f59e0b" />
+  //       <Text style={styles.loadingText}>Cargando productos...</Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={styles.container}>
@@ -217,24 +217,31 @@ const ProductList: React.FC<ProductListProps> = ({
       </View>
 
       <View style={styles.listContainer}>
-        <FlatList
-          data={products}
-          renderItem={renderProduct}
-          keyExtractor={(item) => item.id}
-          style={styles.productList}
-          contentContainerStyle={styles.productListContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="cube-outline" size={48} color="#9ca3af" />
-              <Text style={styles.emptyText}>
-                {searchQuery
-                  ? "No se encontraron productos"
-                  : "No hay productos disponibles"}
-              </Text>
-            </View>
-          }
-        />
+        {isLoading && products.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#f59e0b" />
+            <Text style={styles.loadingText}>Cargando productos...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={products}
+            renderItem={renderProduct}
+            keyExtractor={(item) => item.id}
+            style={styles.productList}
+            contentContainerStyle={styles.productListContent}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Ionicons name="cube-outline" size={48} color="#9ca3af" />
+                <Text style={styles.emptyText}>
+                  {searchQuery
+                    ? "No se encontraron productos"
+                    : "No hay productos disponibles"}
+                </Text>
+              </View>
+            }
+          />
+        )}
       </View>
 
       {renderPagination()}

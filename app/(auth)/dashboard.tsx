@@ -16,6 +16,8 @@ import StatsModule from "@/components/StatsModule";
 import ShoppingCart from "@/components/ShoppingCart";
 import ProductList from "@/components/ProductList";
 import ProductDetailModal from "@/components/ProductDetailModal";
+import MobileRevenueKpis from "@/components/analytics/MobileRevenueKpis";
+import MobileSalesChart from "@/components/analytics/MobileSalesChart";
 import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "../../api/products";
 import { IProduct } from "../../interfaces/product.interfaces";
@@ -50,6 +52,8 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: ["products", currentPage, debouncedSearchQuery],
     queryFn: () => getProducts(currentPage, 10, debouncedSearchQuery),
+    gcTime: 0,
+    staleTime: 0,
   });
 
   const handleLogout = () => {
@@ -65,11 +69,6 @@ export default function Dashboard() {
     setSearchQuery(query);
   };
 
-  const handleViewProductDetail = (product: IProduct) => {
-    setSelectedProduct(product);
-    setIsDetailModalVisible(true);
-  };
-
   const handleCloseDetailModal = () => {
     setIsDetailModalVisible(false);
     setSelectedProduct(null);
@@ -77,7 +76,7 @@ export default function Dashboard() {
 
   // Datos para el FlatList principal
   const dashboardSections = [
-    { id: "header", type: "header" },
+    // { id: "header", type: "header" },
     { id: "stats", type: "stats" },
     { id: "cart", type: "cart" },
     { id: "products", type: "products" },
@@ -89,28 +88,37 @@ export default function Dashboard() {
     item: { id: string; type: string };
   }) => {
     switch (item.type) {
-      case "header":
+      // case "header":
+      //   return (
+      //     <View style={styles.header}>
+      //       <View style={styles.headerContent}>
+      //         <View style={styles.headerTextContainer}>
+      //           <Text style={styles.welcomeText}>
+      //             Bienvenido, <Text style={styles.userName}>{user.name}</Text>
+      //           </Text>
+      //           <Text style={styles.userEmail}>{user.email}</Text>
+      //         </View>
+      //         <TouchableOpacity
+      //           onPress={handleLogout}
+      //           style={styles.logoutButton}
+      //         >
+      //           <Ionicons name="log-out-outline" size={24} color="#f59e0b" />
+      //         </TouchableOpacity>
+      //       </View>
+      //     </View>
+      //   );
+
+      case "stats":
         return (
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <View style={styles.headerTextContainer}>
-                <Text style={styles.welcomeText}>
-                  Bienvenido, <Text style={styles.userName}>{user.name}</Text>
-                </Text>
-                <Text style={styles.userEmail}>{user.email}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={handleLogout}
-                style={styles.logoutButton}
-              >
-                <Ionicons name="log-out-outline" size={24} color="#f59e0b" />
-              </TouchableOpacity>
+          <View>
+            <View style={{ paddingBottom: 10 }}>
+              <MobileRevenueKpis />
+            </View>
+            <View style={{ paddingBottom: 10 }}>
+              <MobileSalesChart />
             </View>
           </View>
         );
-
-      case "stats":
-        return <StatsModule />;
 
       case "cart":
         return <ShoppingCart />;
@@ -118,10 +126,10 @@ export default function Dashboard() {
       case "products":
         return (
           <ProductList
-            products={productsData?.data?.data || []}
+            products={productsData ? productsData.data.data : []}
             isLoading={productsLoading}
             currentPage={currentPage}
-            totalPages={productsData?.data?.totalPages || 1}
+            totalPages={productsData ? productsData.data.totalPages : 1}
             onPageChange={handlePageChange}
             onSearch={handleSearch}
             searchQuery={searchQuery}
@@ -147,6 +155,24 @@ export default function Dashboard() {
         />
 
         <SafeAreaView style={styles.safeArea}>
+          {/* KPIs de Revenue fuera del FlatList */}
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <View style={styles.headerTextContainer}>
+                <Text style={styles.welcomeText}>
+                  Bienvenido, <Text style={styles.userName}>{user.name}</Text>
+                </Text>
+                <Text style={styles.userEmail}>{user.email}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={styles.logoutButton}
+              >
+                <Ionicons name="log-out-outline" size={24} color="#f59e0b" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
           <FlatList
             data={dashboardSections}
             renderItem={renderDashboardSection}
@@ -189,7 +215,7 @@ const styles = StyleSheet.create({
   header: {
     // paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   headerContent: {
     flexDirection: "row",
