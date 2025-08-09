@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { getOpenAccountById } from "../api/openAccounts";
 import type { IOpenAccount } from "../api/openAccounts";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface OpenAccountDetailModalProps {
   isVisible: boolean;
@@ -24,6 +25,8 @@ const OpenAccountDetailModal: React.FC<OpenAccountDetailModalProps> = ({
   onClose,
   accountId,
 }) => {
+  const { formatCurrency } = useCurrency();
+
   const {
     data: accountResponse,
     isLoading,
@@ -39,9 +42,9 @@ const OpenAccountDetailModal: React.FC<OpenAccountDetailModalProps> = ({
 
   const accountDetails = accountResponse?.data as IOpenAccount;
 
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`;
-  };
+  // const formatCurrency = (amount: number) => {
+  //   return `$${amount.toLocaleString()}`;
+  // };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-ES", {

@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getOpenAccounts } from "../../api/openAccounts";
 import type { IOpenAccount } from "../../api/openAccounts";
 import OpenAccountDetailModal from "../../components/OpenAccountDetailModal";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const OpenAccountsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,6 +20,7 @@ const OpenAccountsPage: React.FC = () => {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null
   );
+  const { formatCurrency } = useCurrency();
 
   const {
     data: openAccountsData,
@@ -27,6 +29,7 @@ const OpenAccountsPage: React.FC = () => {
   } = useQuery({
     queryKey: ["openAccounts", currentPage],
     queryFn: () => getOpenAccounts(currentPage, 20),
+    gcTime: 0,
   });
 
   const handlePageChange = (page: number) => {
@@ -43,9 +46,9 @@ const OpenAccountsPage: React.FC = () => {
     setSelectedAccountId(null);
   };
 
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`;
-  };
+  // const formatCurrency = (amount: number) => {
+  //   return `$${amount.toLocaleString()}`;
+  // };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-ES", {

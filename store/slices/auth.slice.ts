@@ -1,7 +1,7 @@
 import { Data, User } from "@/interfaces/auth.interfaces";
 import { StateCreator } from "zustand";
 
-export type CurrencyMode = "USD" | "LOCAL";
+export type CurrencyMode = "USD" | "VES";
 
 export interface AuthState extends Data {
   currencyMode: CurrencyMode;

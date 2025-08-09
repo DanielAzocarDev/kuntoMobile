@@ -21,6 +21,7 @@ import MobileSalesChart from "@/components/analytics/MobileSalesChart";
 import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "../../api/products";
 import { IProduct } from "../../interfaces/product.interfaces";
+import DollarDisplay from "@/components/common/DollarDisplay";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -140,6 +141,7 @@ export default function Dashboard() {
               </TouchableOpacity>
             </View>
           </View>
+          <DollarDisplay />
 
           <FlatList
             data={dashboardSections}

@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAppStore } from "../store";
 import { IProduct } from "../interfaces/product.interfaces";
 import ProductDetailModal from "./ProductDetailModal";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface ProductListProps {
   products: IProduct[];
@@ -41,6 +42,7 @@ const ProductList: React.FC<ProductListProps> = ({
   const { addToCart } = useAppStore();
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const { formatCurrency } = useCurrency();
 
   const handleAddToCart = (product: IProduct) => {
     addToCart(product, 1);
@@ -88,7 +90,7 @@ const ProductList: React.FC<ProductListProps> = ({
         <Text style={styles.productName} numberOfLines={2}>
           {item.name}
         </Text>
-        <Text style={styles.productPrice}>${item.price.toLocaleString()}</Text>
+        <Text style={styles.productPrice}>{formatCurrency(item.price)}</Text>
         <Text style={styles.productStock}>Stock: {item.quantity}</Text>
       </View>
 
