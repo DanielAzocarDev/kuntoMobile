@@ -21,6 +21,7 @@ import MobileSalesChart from "@/components/analytics/MobileSalesChart";
 import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "../../api/products";
 import { IProduct } from "../../interfaces/product.interfaces";
+import DollarDisplay from "@/components/common/DollarDisplay";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -76,8 +77,7 @@ export default function Dashboard() {
 
   // Datos para el FlatList principal
   const dashboardSections = [
-    // { id: "header", type: "header" },
-    { id: "stats", type: "stats" },
+    { id: "kpis", type: "kpis" },
     { id: "cart", type: "cart" },
     { id: "products", type: "products" },
   ];
@@ -88,37 +88,8 @@ export default function Dashboard() {
     item: { id: string; type: string };
   }) => {
     switch (item.type) {
-      // case "header":
-      //   return (
-      //     <View style={styles.header}>
-      //       <View style={styles.headerContent}>
-      //         <View style={styles.headerTextContainer}>
-      //           <Text style={styles.welcomeText}>
-      //             Bienvenido, <Text style={styles.userName}>{user.name}</Text>
-      //           </Text>
-      //           <Text style={styles.userEmail}>{user.email}</Text>
-      //         </View>
-      //         <TouchableOpacity
-      //           onPress={handleLogout}
-      //           style={styles.logoutButton}
-      //         >
-      //           <Ionicons name="log-out-outline" size={24} color="#f59e0b" />
-      //         </TouchableOpacity>
-      //       </View>
-      //     </View>
-      //   );
-
-      case "stats":
-        return (
-          <View>
-            <View style={{ paddingBottom: 10 }}>
-              <MobileRevenueKpis />
-            </View>
-            <View style={{ paddingBottom: 10 }}>
-              <MobileSalesChart />
-            </View>
-          </View>
-        );
+      case "kpis":
+        return <MobileRevenueKpis />;
 
       case "cart":
         return <ShoppingCart />;
@@ -143,7 +114,6 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* No necesitamos configurar la pantalla aquí ya que el drawer se maneja en el layout */}
       <LinearGradient
         colors={["#0f172a", "#1e293b", "#334155"]}
         style={styles.container}
@@ -155,7 +125,6 @@ export default function Dashboard() {
         />
 
         <SafeAreaView style={styles.safeArea}>
-          {/* KPIs de Revenue fuera del FlatList */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <View style={styles.headerTextContainer}>
@@ -172,6 +141,7 @@ export default function Dashboard() {
               </TouchableOpacity>
             </View>
           </View>
+          <DollarDisplay />
 
           <FlatList
             data={dashboardSections}
@@ -180,10 +150,6 @@ export default function Dashboard() {
             style={styles.flatList}
             contentContainerStyle={styles.contentContainer}
             showsVerticalScrollIndicator={false}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={4}
-            windowSize={10}
-            initialNumToRender={4}
           />
         </SafeAreaView>
 
@@ -245,5 +211,27 @@ const styles = StyleSheet.create({
   menuButton: {
     padding: 8,
     marginRight: 8,
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#1e293b",
+    borderRadius: 8,
+    marginVertical: 10,
+  },
+  tab: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: "#f59e0b",
+  },
+  tabText: {
+    color: "#9ca3af",
+    fontWeight: "600",
+  },
+  activeTabText: {
+    color: "#f59e0b",
   },
 });
