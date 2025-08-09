@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  FlatList,
+  SectionList,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -91,7 +91,7 @@ const MobileSalesChart: React.FC = () => {
     </View>
   );
 
-  const renderItem = ({ item }: { item: any }) => {
+  const renderDataItem = ({ item }: { item: any }) => {
     const isDaily = period === "daily";
     const title = isDaily
       ? new Date(item.date).toLocaleDateString("es-ES", {
@@ -121,6 +121,49 @@ const MobileSalesChart: React.FC = () => {
     );
   };
 
+  const sections = useMemo(() => {
+    // Sección de resumen con un solo item simbólico
+    const summarySection = {
+      key: "summary",
+      title: "Resumen",
+      data: ["summary"],
+    } as const;
+
+    // Construir secciones de datos agrupando por periodo
+    if (!listData || listData.length === 0) {
+      return [summarySection];
+    }
+
+    if (period === "daily") {
+      // Agrupar por mes (YYYY-MM)
+      const byMonth: Record<string, any[]> = {};
+      listData.forEach((d: any) => {
+        const date = new Date(d.date);
+        const key = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}`;
+        if (!byMonth[key]) byMonth[key] = [];
+        byMonth[key].push(d);
+      });
+      const monthSections = Object.keys(byMonth)
+        .sort((a, b) => (a < b ? 1 : -1))
+        .map((key) => {
+          const [year, month] = key.split("-");
+          const title = `${new Date(
+            parseInt(year),
+            parseInt(month) - 1,
+            2
+          ).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}`;
+          return { key, title, data: byMonth[key] };
+        });
+      return [summarySection, ...monthSections];
+    }
+
+    // Para weekly/monthly, una sola sección
+    const title = period === "weekly" ? "Semanas" : "Meses";
+    return [summarySection, { key: "periods", title, data: listData }];
+  }, [listData, period]);
+
   if (isLoading) {
     return (
       <View style={styles.loadingBox}>
@@ -146,29 +189,41 @@ const MobileSalesChart: React.FC = () => {
     <View style={styles.wrapper}>
       <PeriodSelector selectedPeriod={period} onPeriodChange={setPeriod} />
 
-      <View style={styles.metricsGrid}>
-        <MetricCard
-          label="Ingresos Totales"
-          value={formatCurrency(summaryMetrics.totalRevenue || 0)}
-        />
-        <MetricCard
-          label="Nº de Ventas"
-          value={summaryMetrics.totalSalesCount || 0}
-        />
-        <MetricCard
-          label="Venta Promedio"
-          value={formatCurrency(summaryMetrics.averageOrderValue || 0)}
-        />
-        <MetricCard
-          label="Total Pagado"
-          value={formatCurrency(summaryMetrics.totalPaid || 0)}
-        />
-      </View>
-
-      <FlatList
-        data={listData}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${period}-${index}`}
+      <SectionList
+        sections={sections as any}
+        keyExtractor={(item: any, index: number) =>
+          `${JSON.stringify(item)}-${index}`
+        }
+        renderSectionHeader={({ section }: any) => (
+          <Text style={styles.sectionHeader}>{section.title}</Text>
+        )}
+        renderItem={({ item, section }: any) => {
+          if (section.key === "summary") {
+            return (
+              <View style={styles.metricsGrid}>
+                <MetricCard
+                  label="Ingresos Totales"
+                  value={formatCurrency(summaryMetrics.totalRevenue || 0)}
+                />
+                <MetricCard
+                  label="Nº de Ventas"
+                  value={summaryMetrics.totalSalesCount || 0}
+                />
+                <MetricCard
+                  label="Venta Promedio"
+                  value={formatCurrency(summaryMetrics.averageOrderValue || 0)}
+                />
+                <MetricCard
+                  label="Total Pagado"
+                  value={formatCurrency(summaryMetrics.totalPaid || 0)}
+                />
+              </View>
+            );
+          }
+          return renderDataItem({ item });
+        }}
+        stickySectionHeadersEnabled
+        contentContainerStyle={{ paddingBottom: 8, paddingTop: 8 }}
       />
     </View>
   );
@@ -249,6 +304,15 @@ const styles = StyleSheet.create({
   itemMetric: {
     color: "#9ca3af",
     fontSize: 12,
+  },
+  sectionHeader: {
+    color: "#fff",
+    backgroundColor: "#1e293b",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 
