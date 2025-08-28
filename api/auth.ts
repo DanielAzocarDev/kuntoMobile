@@ -1,6 +1,43 @@
 
-import type { ILoginUser, LoginResponse, ApiError } from '../interfaces/auth.interfaces';
+import type {
+  ILoginUser,
+  LoginResponse,
+  ApiError,
+  IForgotPassword,
+  ForgotPasswordResponse,
+  IResetPassword,
+  ResetPasswordResponse,
+} from "../interfaces/auth.interfaces";
 import { apiClient } from './client';
+
+export const forgotPassword = async (
+  payload: IForgotPassword
+): Promise<ForgotPasswordResponse> => {
+  try {
+    const { data } = await apiClient.post<ForgotPasswordResponse>(
+      "/auth/forgot-password",
+      payload
+    );
+    console.log(data);
+    return data;
+  } catch (error) {
+    throw error as ApiError;
+  }
+};
+
+export const resetPassword = async (
+  payload: IResetPassword
+): Promise<ResetPasswordResponse> => {
+  try {
+    const { data } = await apiClient.post<ResetPasswordResponse>(
+      "/auth/reset-password",
+      payload
+    );
+    return data;
+  } catch (error) {
+    throw error as ApiError;
+  }
+};
 
 export const loginUser = async (payload: ILoginUser): Promise<LoginResponse> => {
   try {

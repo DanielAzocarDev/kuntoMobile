@@ -32,4 +32,23 @@ export interface ApiError {
     };
   };
   status?: number;
-} 
+}
+
+export interface IForgotPassword {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface IResetPassword {
+  token: string;
+  password: string;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
