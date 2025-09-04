@@ -7,8 +7,24 @@ import type {
   ForgotPasswordResponse,
   IResetPassword,
   ResetPasswordResponse,
+  IRegisterUser,
+  RegisterResponse,
 } from "../interfaces/auth.interfaces";
 import { apiClient } from './client';
+
+export const registerUser = async (
+  payload: IRegisterUser
+): Promise<RegisterResponse> => {
+  try {
+    const { data } = await apiClient.post<RegisterResponse>(
+      "/auth/register",
+      payload
+    );
+    return data;
+  } catch (error) {
+    throw error as ApiError;
+  }
+};
 
 export const forgotPassword = async (
   payload: IForgotPassword
