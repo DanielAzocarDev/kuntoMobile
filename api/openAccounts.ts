@@ -1,5 +1,33 @@
 import { apiClient } from './client';
 
+export interface ISaleItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  name: string;
+  product?: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface IPayment {
+  id: string;
+  amount: number;
+  method: string;
+  createdAt: string;
+}
+
+export interface ISale {
+  id: string;
+  total: number;
+  status: 'PENDING' | 'PAID';
+  createdAt: string;
+  items?: ISaleItem[];
+  Payment?: IPayment[];
+}
+
 export interface IOpenAccount {
   id: string;
   clientId: string;
@@ -12,29 +40,7 @@ export interface IOpenAccount {
     email?: string;
     phone?: string;
   };
-  sales?: Array<{
-    id: string;
-    total: number;
-    status: 'PENDING' | 'PAID';
-    createdAt: string;
-    items?: Array<{
-      id: string;
-      productId: string;
-      quantity: number;
-      price: number;
-      name: string;
-      product?: {
-        id: string;
-        name: string;
-      };
-    }>;
-    Payment?: Array<{
-      id: string;
-      amount: number;
-      method: string;
-      createdAt: string;
-    }>;
-  }>;
+  sales?: ISale[];
   totalPaidOnThisAccount?: number;
 }
 
@@ -71,7 +77,11 @@ export const getOpenAccounts = async (page = 1, pageSize = 10, search?: string) 
 
 export const getOpenAccountById = async (id: string) => {
   try {
-    const { data } = await apiClient.get<{ success: boolean; data: IOpenAccount }>(`/open-accounts/${id}`);
+    const { data } = await apiClient.get<{ success: boolean; data: IOpenAccount }>(`/open-accounts/${id}`, {
+      params: {
+        include: 'full',
+      },
+    });
     return data;
   } catch (error) {
     console.error("Error fetching open account by ID:", error);
