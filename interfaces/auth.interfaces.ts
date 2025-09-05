@@ -1,3 +1,22 @@
+import { Country } from "../api/countries";
+
+export interface IRegisterUser {
+  name: string;
+  lastname: string;
+  email: string;
+  password: string;
+  businessName?: string;
+  phone?: string;
+  city?: string;
+  country: Country;
+  acceptTerms: boolean;
+}
+
+export interface RegisterResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface ILoginUser {
   email: string;
   password: string;

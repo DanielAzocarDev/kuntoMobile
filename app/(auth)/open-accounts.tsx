@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  Share,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -46,6 +48,57 @@ const OpenAccountsPage: React.FC = () => {
     setSelectedAccountId(null);
   };
 
+  const handleShareSummary = async (account: IOpenAccount) => {
+    try {
+      const totalSales =
+        account.sales?.reduce((sum, sale) => sum + sale.total, 0) || 0;
+      const totalPaid = account.totalPaidOnThisAccount || 0;
+      const pendingBalance = totalSales - totalPaid;
+
+      let summaryText = `Resumen de Cuenta para: ${account.client?.name || "Cliente Desconocido"}\n`;
+      summaryText += `-----------------------------------\n`;
+      summaryText += `Fecha de Apertura: ${new Date(
+        account.createdAt
+      ).toLocaleDateString("es-ES")}\n`;
+      summaryText += `\n--- VENTAS ---\n`;
+
+      account.sales?.forEach((sale) => {
+        summaryText += `\n* Venta del ${new Date(
+          sale.createdAt
+        ).toLocaleDateString(
+          "es-ES"
+        )} - Total: ${formatCurrency(sale.total)}\n`;
+
+        sale.items?.forEach((p) => {
+          summaryText += `  - ${p.quantity} x ${p.product?.name || "Producto Desconocido"} (${formatCurrency(
+            p.price
+          )})\n`;
+        });
+
+        if (sale.Payment && sale.Payment.length > 0) {
+          summaryText += `\n  --- Pagos Registrados en esta Venta ---\n`;
+          sale.Payment.forEach((payment) => {
+            summaryText += `    - ${formatCurrency(payment.amount)} el ${new Date(
+              payment.createdAt
+            ).toLocaleDateString("es-ES")}\n`;
+          });
+        }
+      });
+
+      summaryText += `\n-----------------------------------\n`;
+      summaryText += `TOTAL VENTAS: ${formatCurrency(totalSales)}\n`;
+      summaryText += `TOTAL PAGADO: ${formatCurrency(totalPaid)}\n`;
+      summaryText += `SALDO PENDIENTE: ${formatCurrency(pendingBalance)}\n`;
+
+      await Share.share({
+        message: summaryText,
+        title: `Resumen de Cuenta de ${account.client?.name}`,
+      });
+    } catch (error) {
+      Alert.alert("Error", "Ocurrió un error al intentar compartir el resumen.");
+    }
+  };
+
   // const formatCurrency = (amount: number) => {
   //   return `$${amount.toLocaleString()}`;
   // };
@@ -80,14 +133,15 @@ const OpenAccountsPage: React.FC = () => {
     }
   };
 
-  const renderOpenAccount = ({ item }: { item: IOpenAccount }) => {
+  
+  const OpenAccountCard = ({ item }: { item: IOpenAccount }) => {
     const totalSales =
       item.sales?.reduce((sum, sale) => sum + sale.total, 0) || 0;
     const totalPaid = item.totalPaidOnThisAccount || 0;
     const totalPending = totalSales - totalPaid;
 
     return (
-      <View style={styles.accountCard}>
+      <TouchableOpacity onPress={() => handleViewAccountDetail(item.id)} style={styles.accountCard}>
         <View style={styles.accountHeader}>
           <View style={styles.accountInfo}>
             <Text style={styles.clientName}>{item.client?.name}</Text>
@@ -95,53 +149,64 @@ const OpenAccountsPage: React.FC = () => {
               Creada: {formatDate(item.createdAt)}
             </Text>
           </View>
-          <View style={styles.accountStatus}>
-            <View
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: `${getStatusColor(item.status)}20` },
+            ]}
+          >
+            <Text
               style={[
-                styles.statusBadge,
-                { backgroundColor: `${getStatusColor(item.status)}20` },
+                styles.statusText,
+                { color: getStatusColor(item.status) },
               ]}
             >
-              <Text
-                style={[
-                  styles.statusText,
-                  { color: getStatusColor(item.status) },
-                ]}
-              >
-                {getStatusText(item.status)}
-              </Text>
-            </View>
+              {getStatusText(item.status)}
+            </Text>
           </View>
         </View>
-        <View style={styles.accountDetails}>
-          <View style={styles.amountRow}>
-            <Text style={styles.amountLabel}>Total:</Text>
+
+        <View style={styles.amountsContainer}>
+          <View style={styles.amountBox}>
+            <Text style={styles.amountLabel}>Total</Text>
             <Text style={styles.amountValue}>{formatCurrency(totalSales)}</Text>
           </View>
-          <View style={styles.amountRow}>
-            <Text style={styles.amountLabel}>Pagado:</Text>
+          <View style={styles.amountBox}>
+            <Text style={styles.amountLabel}>Pagado</Text>
             <Text style={[styles.amountValue, { color: "#10b981" }]}>
               {formatCurrency(totalPaid)}
             </Text>
           </View>
-          <View style={styles.amountRow}>
-            <Text style={styles.amountLabel}>Pendiente:</Text>
+          <View style={styles.amountBox}>
+            <Text style={styles.amountLabel}>Pendiente</Text>
             <Text style={[styles.amountValue, { color: "#f59e0b" }]}>
               {formatCurrency(totalPending)}
             </Text>
           </View>
         </View>
-        <View style={styles.actionButtons}>
+
+        <View style={styles.cardFooter}>
+          <Text style={styles.salesCount}>
+            {item.sales?.length || 0} venta(s)
+          </Text>
           <TouchableOpacity
-            style={styles.viewDetailButton}
-            onPress={() => handleViewAccountDetail(item.id)}
+            style={styles.actionButton}
+            onPress={(e) => {
+              e.stopPropagation(); // Evita que se active el onPress del card
+              handleShareSummary(item);
+            }}
           >
-            <Ionicons name="eye-outline" size={20} color="#3b82f6" />
+            <Ionicons name="share-social-outline" size={20} color="#9ca3af" />
           </TouchableOpacity>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
+
+  const renderOpenAccount = ({ item }: { item: IOpenAccount }) => (
+    <OpenAccountCard item={item} />
+  );
+
 
   if (isLoading && !openAccountsData) {
     return (
@@ -356,31 +421,30 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
   },
   listContent: {
-    flexGrow: 1,
+    paddingHorizontal: 4,
+    paddingBottom: 20,
   },
   accountCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    backgroundColor: "#1e293b",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(156, 163, 175, 0.1)',
   },
   accountHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   accountInfo: {
     flex: 1,
   },
   clientName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
     color: "#e5e7eb",
     marginBottom: 4,
@@ -388,51 +452,55 @@ const styles = StyleSheet.create({
   accountDate: {
     fontSize: 12,
     color: "#9ca3af",
-    marginBottom: 2,
-  },
-  accountStatus: {
-    marginLeft: 12,
   },
   statusBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    marginLeft: 12,
   },
   statusText: {
     fontSize: 10,
-    fontWeight: "600",
+    fontWeight: "bold",
     textTransform: "uppercase",
   },
-  accountDetails: {
-    borderTopWidth: 1,
-    borderTopColor: "rgba(156, 163, 175, 0.2)",
-    paddingTop: 12,
-    marginBottom: 12,
+  amountsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
   },
-  amountRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
+  amountBox: {
+    alignItems: 'center',
+    flex: 1,
   },
   amountLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#9ca3af",
+    marginBottom: 4,
+    textTransform: 'uppercase',
   },
   amountValue: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "bold",
     color: "#e5e7eb",
   },
-  actionButtons: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(156, 163, 175, 0.2)",
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(156, 163, 175, 0.1)',
   },
-  viewDetailButton: {
-    padding: 8,
+  salesCount: {
+    fontSize: 12,
+    color: '#9ca3af',
+  },
+  actionButton: {
+    padding: 4,
   },
   emptyContainer: {
     alignItems: "center",
