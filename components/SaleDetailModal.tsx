@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSaleById } from "../api/sales";
 import { addPaymentToSale } from "../api/payments";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface SaleDetailModalProps {
   isVisible: boolean;
@@ -55,6 +56,8 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+
+  const { formatCurrency } = useCurrency();
 
   const {
     data: saleResponse,
@@ -113,9 +116,9 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({
     ? saleDetails.total - (saleDetails.totalPaid || 0)
     : 0;
 
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`;
-  };
+  // const formatCurrency = (amount: number) => {
+  //   return `$${amount.toLocaleString()}`;
+  // };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-ES", {

@@ -90,6 +90,13 @@ export default function AuthLayout() {
           }}
         />
         <Drawer.Screen
+          name="analytics"
+          options={{
+            headerTitle: "Estadísticas",
+            drawerLabel: "Estadísticas",
+          }}
+        />
+        <Drawer.Screen
           name="products"
           options={{
             headerTitle: "Productos",

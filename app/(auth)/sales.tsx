@@ -12,8 +12,10 @@ import { useQuery } from "@tanstack/react-query";
 import { getSales } from "../../api/sales";
 import { ISale } from "../../interfaces/sales.interfaces";
 import SaleDetailModal from "../../components/SaleDetailModal";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const SalesPage: React.FC = () => {
+  const { formatCurrency } = useCurrency();
   const [currentPage, setCurrentPage] = useState(1);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
@@ -41,9 +43,9 @@ const SalesPage: React.FC = () => {
     setSelectedSaleId(null);
   };
 
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`;
-  };
+  // const formatCurrency = (amount: number) => {
+  //   return `$${amount.toLocaleString()}`;
+  // };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-ES", {

@@ -165,7 +165,7 @@ export default function Login() {
               </View>
 
               {/* Forgot Password Link */}
-              <TouchableOpacity style={styles.forgotPasswordContainer}>
+              <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => router.push("/forgot-password")}>
                 <Text style={styles.forgotPasswordText}>
                   ¿Olvidaste tu contraseña?
                 </Text>
@@ -188,7 +188,7 @@ export default function Login() {
               {/* Register Link */}
               <View style={styles.registerContainer}>
                 <Text style={styles.registerText}>¿No tienes una cuenta? </Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/register')}>
                   <Text style={styles.registerLink}>Regístrate aquí</Text>
                 </TouchableOpacity>
               </View>

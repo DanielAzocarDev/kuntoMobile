@@ -1,11 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Text,
   View,
   StyleSheet,
   Dimensions,
   FlatList,
-  Linking,
   StatusBar,
   Animated,
   Pressable,
@@ -32,7 +31,7 @@ const carouselData = [
     title: "Ventas e Ingresos",
     description:
       "Registra ventas, sigue tus ingresos en tiempo real y obtén reportes detallados.",
-    color: "#f59e0b",
+    color: "#10b981",
   },
   {
     id: 3,
@@ -40,7 +39,7 @@ const carouselData = [
     title: "Administración de Clientes",
     description:
       "Mantén una base de datos de tus clientes, sus historiales y preferencias.",
-    color: "#f59e0b",
+    color: "#3b82f6",
   },
   {
     id: 4,
@@ -48,7 +47,7 @@ const carouselData = [
     title: "Crecimiento y Más",
     description:
       "Herramientas adicionales para impulsar la eficiencia y expansión de tu negocio.",
-    color: "#f59e0b",
+    color: "#8b5cf6",
   },
 ];
 
@@ -57,95 +56,66 @@ const WelcomeScreen = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
+  const fadeInAnim = useRef(new Animated.Value(0)).current;
 
-  const renderCarouselItem = ({
-    item,
-    index,
-  }: {
-    item: any;
-    index: number;
-  }) => {
+  useEffect(() => {
+    Animated.timing(fadeInAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeInAnim]);
+
+  const renderCarouselItem = ({ item, index }: { item: any; index: number }) => {
     const inputRange = [
-      (index - 1) * (screenWidth * 0.8 + 20),
-      index * (screenWidth * 0.8 + 20),
-      (index + 1) * (screenWidth * 0.8 + 20),
+      (index - 1) * screenWidth,
+      index * screenWidth,
+      (index + 1) * screenWidth,
     ];
 
     const scale = scrollX.interpolate({
       inputRange,
-      outputRange: [0.9, 1, 0.9],
-      extrapolate: "clamp",
-    });
-
-    const opacity = scrollX.interpolate({
-      inputRange,
-      outputRange: [0.7, 1, 0.7],
+      outputRange: [0.8, 1, 0.8],
       extrapolate: "clamp",
     });
 
     return (
-      <Animated.View
-        style={[
-          styles.carouselItem,
-          {
-            transform: [{ scale }],
-            opacity,
-          },
-        ]}
-      >
-        <View
-          style={[styles.iconContainer, { backgroundColor: `${item.color}20` }]}
-        >
-          <Ionicons name={item.icon as any} size={48} color={item.color} />
-        </View>
-        <Text style={styles.carouselTitle}>{item.title}</Text>
-        <Text style={styles.carouselDescription}>{item.description}</Text>
+      <Animated.View style={[styles.carouselItemContainer, { transform: [{ scale }] }]}>
+        <BlurView intensity={50} tint="dark" style={styles.carouselItem}>
+          <View style={[styles.iconContainer, { backgroundColor: `${item.color}30` }]}>
+            <Ionicons name={item.icon as any} size={48} color={item.color} />
+          </View>
+          <Text style={styles.carouselTitle}>{item.title}</Text>
+          <Text style={styles.carouselDescription}>{item.description}</Text>
+        </BlurView>
       </Animated.View>
     );
   };
 
-  const handleViewableItemsChanged = ({ viewableItems }: any) => {
+  const handleViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
       setActiveIndex(viewableItems[0].index);
     }
-  };
+  }).current;
 
-  const viewabilityConfig = {
-    itemVisiblePercentThreshold: 50,
-  };
-
-  const handleJoinWaitlist = () => {
-    Linking.openURL(
-      "https://docs.google.com/forms/d/e/1FAIpQLSe6uGQWZMPbfoADdgRniHypP-lKqfelsHporQrWdp6D-1QAGA/viewform?usp=header"
-    );
-  };
-
-  const handleLogin = () => {
-    navigate.push("/login");
-  };
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <LinearGradient
-        colors={["#0f172a", "#1e293b", "#334155"]}
-        style={styles.container}
-      >
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor="transparent"
-          translucent
-        />
-        <View style={styles.header}>
+      <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <Animated.View style={[styles.header, { opacity: fadeInAnim }]}>
+          <Ionicons name="aperture-outline" size={48} color="#f59e0b" style={styles.logo} />
           <Text style={styles.welcomeTitle}>
             Bienvenido a <Text style={styles.highlightText}>Kunto</Text>
           </Text>
-        </View>
-        <View style={styles.carouselContainer}>
           <Text style={styles.welcomeSubtitle}>
-            Descubre una forma revolucionaria de gestionar tus finanzas,
-            organizar tus tareas y alcanzar tus metas.
+            La herramienta definitiva para potenciar tu negocio.
           </Text>
+        </Animated.View>
+
+        <View style={styles.carouselContainer}>
           <Animated.FlatList
             ref={flatListRef}
             data={carouselData}
@@ -154,10 +124,9 @@ const WelcomeScreen = () => {
             horizontal
             showsHorizontalScrollIndicator={false}
             pagingEnabled
-            snapToInterval={screenWidth * 0.8 + 20}
+            snapToInterval={screenWidth}
             snapToAlignment="center"
             decelerationRate="fast"
-            contentContainerStyle={styles.carouselContent}
             onViewableItemsChanged={handleViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
             onScroll={Animated.event(
@@ -172,31 +141,24 @@ const WelcomeScreen = () => {
                 key={index}
                 style={[
                   styles.paginationDot,
-                  index === activeIndex && styles.paginationDotActive,
+                  index === activeIndex && [styles.paginationDotActive, { backgroundColor: carouselData[activeIndex].color }],
                 ]}
               />
             ))}
           </View>
         </View>
-        <View style={styles.buttonContainer}>
-          <Pressable style={styles.joinButton} onPress={handleJoinWaitlist}>
-            <LinearGradient
-              colors={["#f59e0b", "#d97706"]}
-              style={styles.gradientButton}
-            >
-              <Ionicons name="gift-outline" size={24} color="white" />
-              <Text style={styles.joinButtonText}>
-                Únete a la Lista de Espera
-              </Text>
+
+        <Animated.View style={[styles.buttonContainer, { opacity: fadeInAnim }]}>
+          <Pressable style={styles.joinButton} onPress={() => navigate.push("/register")}>
+            <LinearGradient colors={["#f59e0b", "#d97706"]} style={styles.gradientButton}>
+              <Ionicons name="person-add-outline" size={24} color="white" />
+              <Text style={styles.joinButtonText}>Crear una cuenta</Text>
             </LinearGradient>
           </Pressable>
-          <Text style={styles.footerText}>
-            ¿Ya tienes una cuenta?{" "}
-            <Text style={styles.linkText} onPress={handleLogin}>
-              Inicia Sesión Aquí
-            </Text>
-          </Text>
-        </View>
+          <Pressable style={styles.loginButton} onPress={() => navigate.push("/login")}>
+            <Text style={styles.loginButtonText}>¿Ya tienes una cuenta? Inicia Sesión</Text>
+          </Pressable>
+        </Animated.View>
       </LinearGradient>
     </>
   );
@@ -205,61 +167,50 @@ const WelcomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 100,
+    justifyContent: 'space-between',
   },
   header: {
-    paddingTop: 60,
+    paddingTop: 80,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    alignItems: 'center',
   },
   logo: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#f59e0b",
-    textAlign: "center",
-  },
-  carouselContainer: {
-    flex: 0.8,
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    marginBottom: 16,
   },
   welcomeTitle: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: "bold",
     color: "white",
     textAlign: "center",
-    marginBottom: 10,
   },
   highlightText: {
     color: "#f59e0b",
   },
   welcomeSubtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#cbd5e1",
     textAlign: "center",
-    marginBottom: 40,
-    lineHeight: 24,
+    marginTop: 8,
   },
-  carouselContent: {
-    paddingHorizontal: 10,
+  carouselContainer: {
+    flex: 1,
+    justifyContent: "center",
+    paddingVertical: 20,
+  },
+  carouselItemContainer: {
+    width: screenWidth,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   carouselItem: {
-    backgroundColor: "white",
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 30,
-    marginHorizontal: 10,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
-    minHeight: 200,
-    width: screenWidth * 0.8,
+    width: screenWidth * 0.85,
+    height: 300,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   iconContainer: {
     width: 80,
@@ -267,53 +218,48 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   carouselTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#1e293b",
+    color: "#ffffff",
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   carouselDescription: {
-    fontSize: 14,
-    color: "#64748b",
+    fontSize: 15,
+    color: "#e2e8f0",
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 22,
   },
   pagination: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
   },
   paginationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: "#475569",
-    marginHorizontal: 4,
+    marginHorizontal: 5,
   },
   paginationDotActive: {
-    backgroundColor: "#f59e0b",
     width: 24,
   },
   buttonContainer: {
-    flex: 0.2,
     paddingHorizontal: 20,
-    paddingBottom: 40,
-    justifyContent: "space-between",
+    paddingBottom: 50,
   },
   joinButton: {
-    marginBottom: 15,
     borderRadius: 12,
     overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
@@ -322,42 +268,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 18,
   },
   joinButtonText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
-    marginLeft: 8,
+    marginLeft: 12,
   },
   loginButton: {
-    marginBottom: 15,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  blurButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    marginTop: 16,
+    alignItems: 'center',
   },
   loginButtonText: {
     color: "#f59e0b",
     fontSize: 16,
-    fontWeight: "bold",
-    marginLeft: 8,
-  },
-  footerText: {
-    color: "#94a3b8",
-    textAlign: "center",
-    fontSize: 14,
-  },
-  linkText: {
-    color: "#f59e0b",
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 });
 

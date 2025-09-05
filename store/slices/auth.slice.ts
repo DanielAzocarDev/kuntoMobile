@@ -1,15 +1,19 @@
-import { Data } from "@/interfaces/auth.interfaces";
+import { Data, User } from "@/interfaces/auth.interfaces";
 import { StateCreator } from "zustand";
 
-
+export type CurrencyMode = "USD" | "VES";
 
 export interface AuthState extends Data {
+  currencyMode: CurrencyMode;
+  dollarRate: number | null;
   login: (payload: Data) => void;
   logout: () => void;
-  updateUser: (country: string, currency: string, currencySymbol: string) => void;
+  updateUser: (user: Partial<User>) => void;
+  setCurrencyMode: (mode: CurrencyMode) => void;
+  setDollarRate: (rate: number) => void;
 }
 
-const initialState: Data = {
+const initialState: Omit<AuthState, 'login' | 'logout' | 'updateUser' | 'setCurrencyMode' | 'setDollarRate'> = {
   token: '',
   user: {
     id: '',
@@ -20,6 +24,8 @@ const initialState: Data = {
     currencySymbol: '',
     role: 'USER',
   },
+  currencyMode: "USD",
+  dollarRate: null,
 }
 export const createAuthSlice: StateCreator<AuthState> = (set) => ({
   ...initialState,
@@ -27,14 +33,14 @@ export const createAuthSlice: StateCreator<AuthState> = (set) => ({
   logout: () => {
     set(initialState);
   },
-  updateUser: (country, currency, currencySymbol) =>
+  updateUser: (user) =>
     set((state) => ({
       ...state,
       user: {
         ...state.user,
-        country,
-        currency,
-        currencySymbol,
+        ...user,
       },
     })),
+    setCurrencyMode: (mode) => set({ currencyMode: mode }),
+    setDollarRate: (rate) => set({ dollarRate: rate }),
 });
