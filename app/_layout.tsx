@@ -1,29 +1,54 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { SplashScreen, Stack, useRouter, useSegments } from "expo-router";
+import React, { useEffect } from "react";
+import { useAuthInit } from "../hooks/useAuthInit";
+import { useAppStore } from "../store";
+import { ActivityIndicator, View } from "react-native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+const queryClient = new QueryClient();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+const InitialLayout = () => {
+  const { isHydrated } = useAuthInit();
+  const token = useAppStore((state) => state.token);
+  const segments = useSegments();
+  const router = useRouter();
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (token && !inAuthGroup) {
+      router.replace("/dashboard");
+    } else if (!token && inAuthGroup) {
+      router.replace("/welcome");
+    }
+
+    SplashScreen.hideAsync();
+  }, [isHydrated, token, segments, router]);
+
+  if (!isHydrated) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator />
+      </View>
+    );
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack>
+      <Stack.Screen name="(public)" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+    </Stack>
+  );
+};
+
+export default function RootLayout() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <InitialLayout />
+    </QueryClientProvider>
   );
 }
